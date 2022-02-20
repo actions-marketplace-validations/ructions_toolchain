@@ -15,5 +15,6 @@
     "labels": [
       "dependencies"
     ],
-    "prHourlyLimit": 0
+    "prHourlyLimit": 0,
+    "includeFork": true
 }
