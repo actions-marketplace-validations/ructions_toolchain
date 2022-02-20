@@ -16,5 +16,5 @@
       "dependencies"
     ],
     "prHourlyLimit": 0,
-    "includeFork": true
+    "includeForks": true
 }
