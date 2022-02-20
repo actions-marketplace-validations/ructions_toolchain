@@ -1,10 +1,7 @@
 # `rust-toolchain` Action
 
-[![Sponsoring](https://img.shields.io/badge/Support%20it-Say%20%22Thank%20you!%22-blue)](https://actions-rs.github.io/#sponsoring)
 ![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)
-[![Gitter](https://badges.gitter.im/actions-rs/community.svg)](https://gitter.im/actions-rs/community)
-![Continuous integration](https://github.com/actions-rs/toolchain/workflows/Continuous%20integration/badge.svg)
-![Dependabot enabled](https://api.dependabot.com/badges/status?host=github&repo=actions-rs/toolchain)
+![CI](https://github.com/ructions/toolchain/workflows/Continuous%20integration/badge.svg)
 
 This GitHub Action installs [Rust toolchain](https://rust-lang.github.io/rustup/concepts/toolchains.html#toolchain-specification)
 with [rustup](https://github.com/rust-lang/rustup) help.
@@ -12,7 +9,7 @@ with [rustup](https://github.com/rust-lang/rustup) help.
 It supports additional targets, components and profiles and handles all
 these small papercuts for you.
 
-**Table of Contents**
+## Table of Contents
 
 * [Example workflow](#example-workflow)
 * [Inputs](#inputs)
@@ -37,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
+        uses: ructions/toolchain@v1
         with:
             toolchain: nightly
             override: true
@@ -47,12 +44,10 @@ jobs:
       # as it is set as an "override" for current directory
 
       - name: Run cargo check
-        uses: actions-rs/cargo@v1
+        uses: ructions/cargo@v1
         with:
           command: check
 ```
-
-See [additional recipes here](https://github.com/actions-rs/meta).
 
 ## Inputs
 
@@ -90,7 +85,7 @@ minimally required set of components, for example:
 
 ```yaml
 - name: Install minimal nightly
-  uses: actions-rs/toolchain@v1
+  uses: ructions/toolchain@v1
   with:
     profile: minimal
     toolchain: nightly
@@ -112,7 +107,7 @@ and in combination with the [profiles](#profiles) input it allows to install onl
 
 ```yaml
 - name: Install minimal stable with clippy and rustfmt
-  uses: actions-rs/toolchain@v1
+  uses: ructions/toolchain@v1
   with:
     profile: minimal
     toolchain: stable
@@ -125,7 +120,7 @@ to install the minimal set of `nightly` toolchain components with the `rustfmt` 
 
 ```yaml
 - name: Install minimal nightly with clippy and rustfmt
-  uses: actions-rs/toolchain@v1
+  uses: ructions/toolchain@v1
   with:
     profile: minimal
     toolchain: nightly
@@ -156,14 +151,11 @@ Action execution will fail.
 
 ## License
 
-This Action is distributed under the terms of the MIT license, see [LICENSE](https://github.com/actions-rs/toolchain/blob/master/LICENSE) for details.
+This Action is distributed under the terms of the MIT license, see [LICENSE](https://github.com/ructions/toolchain/blob/master/LICENSE) for details.
 
 ## Contribute and support
 
 Any contributions are welcomed!
 
 If you want to report a bug or have a feature request,
-check the [Contributing guide](https://github.com/actions-rs/.github/blob/master/CONTRIBUTING.md).
-
-You can also support author by funding the ongoing project work,
-see [Sponsoring](https://actions-rs.github.io/#sponsoring).
+check the [Contributing guide](https://github.com/ructions/.github/blob/master/CONTRIBUTING.md).
