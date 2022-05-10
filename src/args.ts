@@ -1,18 +1,18 @@
-import { input } from "@actions-rs/core";
+import { getInput } from "@actions/core";
 import { debug } from "@actions/core";
 import { existsSync, readFileSync } from "fs";
 
 export interface ToolchainOptions {
     name: string;
-    target: string | undefined;
+    target: string;
     default: boolean;
     override: boolean;
-    profile: string | undefined;
-    components: string[] | undefined;
+    profile: string;
+    components: string[];
 }
 
 function determineToolchain(overrideFile: string): string {
-    const toolchainInput = input.getInput("toolchain", { required: false });
+    const toolchainInput = getInput("toolchain", { required: false });
 
     if (toolchainInput) {
         debug(`using toolchain from input: ${toolchainInput}`);
@@ -36,17 +36,17 @@ function determineToolchain(overrideFile: string): string {
 }
 
 export function getToolchainArgs(overrideFile: string): ToolchainOptions {
-    let components: string[] | undefined = input.getInputList("components");
-    if (components && components.length === 0) {
-        components = undefined;
-    }
+    const components: string[] = getInput("components")
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => 0 < s.length);
 
     return {
         name: determineToolchain(overrideFile),
-        target: input.getInput("target") || undefined,
-        default: input.getInputBool("default"),
-        override: input.getInputBool("override"),
-        profile: input.getInput("profile") || undefined,
-        components: components,
+        target: getInput("target"),
+        default: getInput("default") === "true",
+        override: getInput("override") === "true",
+        profile: getInput("profile"),
+        components,
     };
 }

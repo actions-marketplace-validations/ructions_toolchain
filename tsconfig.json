@@ -24,9 +24,19 @@
         "target": "es2018",
         "declaration": false,
         "sourceMap": false,
-        "typeRoots": ["./types", "./node_modules/@types"]
+        "paths": {
+            "mock-env": [
+                "./types/mock-env/index.d.ts"
+            ]
+        },
+        "typeRoots": [
+            "./node_modules/@types"
+        ]
     },
     "include": [
-        "src/**/*.ts"
+        "**/*.ts",
+    ],
+    "exclude": [
+        "node_modules"
     ]
 }

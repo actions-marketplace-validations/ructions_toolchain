@@ -1,50 +1,39 @@
-import * as core from "@actions/core";
-import path from "path";
+import { endGroup, setFailed, startGroup } from "@actions/core";
+import { gatherInstalledVersions } from "./versions";
+import { getOrInstall, RustUp } from "./rustup";
+import { getToolchainArgs, ToolchainOptions } from "./args";
+import { join } from "path";
 
-import * as args from "./args";
-import * as versions from "./versions";
-import { RustUp, ToolchainOptions } from "@actions-rs/core";
-
-async function run(): Promise<void> {
-    // we use path.join to make sure this works on Windows, Linux and MacOS
-    const toolchainOverridePath = path.join(process.cwd(), "rust-toolchain");
-
-    const opts = args.getToolchainArgs(toolchainOverridePath);
-    const rustup = await RustUp.getOrInstall();
-    await rustup.call(["show"]);
-
-    let shouldSelfUpdate = false;
-    if (opts.profile && !(await rustup.supportProfiles())) {
-        shouldSelfUpdate = true;
+async function selfUpdate(installOptions: ToolchainOptions, rustup: RustUp) {
+    let neededSelfUpdate = false;
+    if (installOptions.profile && !(await rustup.supportProfiles())) {
+        neededSelfUpdate = true;
     }
-    if (opts.components && !(await rustup.supportComponents())) {
-        shouldSelfUpdate = true;
+    if (installOptions.components && !(await rustup.supportComponents())) {
+        neededSelfUpdate = true;
     }
-    if (shouldSelfUpdate) {
-        core.startGroup("Updating rustup");
+    if (neededSelfUpdate) {
+        startGroup("Updating rustup");
         try {
             await rustup.selfUpdate();
         } finally {
-            core.endGroup();
+            endGroup();
         }
     }
+    return neededSelfUpdate;
+}
 
-    if (opts.profile) {
-        // @ts-ignore: TS2345
-        await rustup.setProfile(opts.profile);
-    }
+async function run(): Promise<void> {
+    const toolchainOverridePath = join(process.cwd(), "rust-toolchain");
 
-    const installOptions: ToolchainOptions = {
-        default: opts.default,
-        override: opts.override,
-    };
-    if (opts.components) {
-        installOptions.components = opts.components;
-    }
-    // We already did it just now, there is no reason to do that again,
-    // so it would skip few network calls.
-    if (shouldSelfUpdate) {
-        installOptions.noSelfUpdate = true;
+    const installOptions = getToolchainArgs(toolchainOverridePath);
+    const rustup = await getOrInstall();
+    await rustup.call(["show"]);
+
+    const didSelfUpdate = await selfUpdate(installOptions, rustup);
+
+    if (installOptions.profile) {
+        await rustup.setProfile(installOptions.profile);
     }
 
     // Extra funny case.
@@ -73,25 +62,31 @@ async function run(): Promise<void> {
     // about what exact nightly it is.
     // In case if it's not the nightly at all or it is a some specific
     // nightly version, they know what they are doing.
-    if (opts.name == "nightly" && opts.components) {
-        installOptions.allowDowngrade = true;
+    const allowDowngrade =
+        !!(installOptions.name == "nightly") && !!installOptions.components;
+
+    // We already did it just now, there is no reason to do that again,
+    // so it would skip few network calls.
+    await rustup.installToolchain(
+        installOptions.name,
+        !didSelfUpdate,
+        allowDowngrade,
+        installOptions
+    );
+
+    if (installOptions.target) {
+        await rustup.addTarget(installOptions.target, installOptions.name);
     }
 
-    await rustup.installToolchain(opts.name, installOptions);
-
-    if (opts.target) {
-        await rustup.addTarget(opts.target, opts.name);
-    }
-
-    await versions.gatherInstalledVersions();
+    await gatherInstalledVersions();
 }
 
 async function main(): Promise<void> {
     try {
         await run();
     } catch (error) {
-        core.setFailed(error.message);
+        setFailed((error as Error).message);
     }
 }
 
-main();
+void main();

@@ -1,10 +1,13 @@
-import * as exec from "@actions/exec";
-import * as core from "@actions/core";
+import { exec, ExecOptions } from "@actions/exec";
+import { endGroup, setOutput, startGroup, warning } from "@actions/core";
 
 interface Version {
     long: string;
     hash: string;
 }
+
+const fullRegex = /\S+\s((\S+)\s\((\S+)\s(\S+)\))/m;
+const shortRegex = /\S+\s(.+)/m;
 
 /**
  * Try to parse the version parts and return them.
@@ -17,11 +20,10 @@ interface Version {
  * As a fallback, `parseShort` function can be used.
  */
 function parseFull(stdout: string): Version {
-    const regex = /\S+\s((\S+)\s\((\S+)\s(\S+)\))/m;
-    stdout = stdout.trim();
-    const matches = regex.exec(stdout);
+    const trimmed = stdout.trim();
+    const matches = fullRegex.exec(trimmed);
     if (matches == null) {
-        throw new Error(`Unable to parse version from the "${stdout}" string`);
+        throw new Error(`Unable to parse version from the "${trimmed}" string`);
     }
 
     return {
@@ -31,11 +33,10 @@ function parseFull(stdout: string): Version {
 }
 
 function parseShort(stdout: string): string {
-    const regex = /\S+\s(.+)/m;
-    stdout = stdout.trim();
-    const matches = regex.exec(stdout);
+    const trimmed = stdout.trim();
+    const matches = shortRegex.exec(trimmed);
     if (matches == null) {
-        core.warning(`Unable to determine version from the "${stdout}" string`);
+        warning(`Unable to determine version from the "${trimmed}" string`);
         return "";
     } else {
         return matches[1];
@@ -45,18 +46,19 @@ function parseShort(stdout: string): string {
 async function getStdout(
     exe: string,
     args: string[],
-    options?: {}
+    options?: ExecOptions
 ): Promise<string> {
     let stdout = "";
-    const resOptions = Object.assign({}, options, {
+    const resOptions = {
+        ...options,
         listeners: {
             stdout: (buffer: Buffer): void => {
                 stdout += buffer.toString();
             },
         },
-    });
+    };
 
-    await exec.exec(exe, args, resOptions);
+    await exec(exe, args, resOptions);
 
     return stdout;
 }
@@ -69,11 +71,11 @@ async function rustc(): Promise<void> {
     try {
         const version = parseFull(stdout);
 
-        core.setOutput("rustc", version.long);
-        core.setOutput("rustc_hash", version.hash);
+        setOutput("rustc", version.long);
+        setOutput("rustc_hash", version.hash);
     } catch (e) {
-        core.warning(e);
-        core.setOutput("rustc", parseShort(stdout));
+        warning(e as Error);
+        setOutput("rustc", parseShort(stdout));
     }
 }
 
@@ -85,9 +87,9 @@ async function cargo(): Promise<void> {
     try {
         const version = parseFull(stdout);
 
-        core.setOutput("cargo", version.long);
+        setOutput("cargo", version.long);
     } catch (e) {
-        core.setOutput("cargo", parseShort(stdout));
+        setOutput("cargo", parseShort(stdout));
     }
 }
 
@@ -95,20 +97,20 @@ async function rustup(): Promise<void> {
     const stdout = await getStdout("rustup", ["-V"]);
     try {
         const version = parseFull(stdout);
-        core.setOutput("rustup", version.long);
+        setOutput("rustup", version.long);
     } catch (e) {
-        core.setOutput("rustup", parseShort(stdout));
+        setOutput("rustup", parseShort(stdout));
     }
 }
 
 export async function gatherInstalledVersions(): Promise<void> {
     try {
-        core.startGroup("Gathering installed versions");
+        startGroup("Gathering installed versions");
 
         await rustc();
         await cargo();
         await rustup();
     } finally {
-        core.endGroup();
+        endGroup();
     }
 }
