@@ -1,3 +1,5 @@
+import { describe, expect, it } from "vitest";
+
 import { getToolchainArgs } from "../src/args";
 import { morph } from "mock-env";
 import tempWrite from "temp-write";
