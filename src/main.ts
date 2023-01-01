@@ -74,8 +74,10 @@ async function run(): Promise<void> {
         installOptions
     );
 
-    if (installOptions.target) {
-        await rustup.addTarget(installOptions.target, installOptions.name);
+    if (installOptions.targets) {
+        for (const target of installOptions.targets) {
+            await rustup.addTarget(target, installOptions.name);
+        }
     }
 
     await gatherInstalledVersions();

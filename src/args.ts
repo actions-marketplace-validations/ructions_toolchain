@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from "fs";
 
 export interface ToolchainOptions {
     name: string;
-    target: string;
+    targets: string[];
     default: boolean;
     override: boolean;
     profile: string;
