@@ -2,7 +2,7 @@ import { endGroup, setFailed, startGroup } from "@actions/core";
 import { gatherInstalledVersions } from "./versions";
 import { getOrInstall, RustUp } from "./rustup";
 import { getToolchainArgs, ToolchainOptions } from "./args";
-import { join } from "path";
+import { tryFindOverrideFile } from "./toolchain";
 
 async function selfUpdate(installOptions: ToolchainOptions, rustup: RustUp) {
     let neededSelfUpdate = false;
@@ -24,9 +24,9 @@ async function selfUpdate(installOptions: ToolchainOptions, rustup: RustUp) {
 }
 
 async function run(): Promise<void> {
-    const toolchainOverridePath = join(process.cwd(), "rust-toolchain");
+    const toolchainOverride = tryFindOverrideFile(process.cwd());
 
-    const installOptions = getToolchainArgs(toolchainOverridePath);
+    const installOptions = getToolchainArgs(toolchainOverride);
     const rustup = await getOrInstall();
     await rustup.call(["show"]);
 
