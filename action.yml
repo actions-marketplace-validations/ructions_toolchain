@@ -1,6 +1,6 @@
-name: "rust-toolchain"
-description: "Install the Rust toolchain"
-author: "actions-rs team"
+name: "Setup Rust Toolchain"
+description: "Install the Rust toolchain. Fork of actions-rs/toolchain."
+author: "actions-rs team & ructions team"
 branding:
   icon: play-circle
   color: gray-dark
