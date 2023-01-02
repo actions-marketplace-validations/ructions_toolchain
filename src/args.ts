@@ -1,52 +1,58 @@
 import { getInput } from "@actions/core";
 import { debug } from "@actions/core";
-import { existsSync, readFileSync } from "fs";
+import { ToolchainOverride } from "./toolchain";
 
 export interface ToolchainOptions {
     name: string;
-    target: string;
+    targets: string[];
     default: boolean;
     override: boolean;
     profile: string;
     components: string[];
 }
 
-function determineToolchain(overrideFile: string): string {
-    const toolchainInput = getInput("toolchain", { required: false });
+export function getToolchainArgs(
+    override: ToolchainOverride | null
+): ToolchainOptions {
+    const id = (x: string) => x;
+    const split = (x: string) =>
+        x
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s) => 0 < s.length);
 
-    if (toolchainInput) {
-        debug(`using toolchain from input: ${toolchainInput}`);
-        return toolchainInput;
-    }
-
-    if (!existsSync(overrideFile)) {
+    if (override?.channel == null && getInput("toolchain") === "") {
         throw new Error(
-            "toolchain input was not given and repository does not have a rust-toolchain file"
+            "toolchain input was not given and repository does not have a rust-toolchain(.toml)? file"
         );
     }
 
-    const rustToolchainFile = readFileSync(overrideFile, {
-        encoding: "utf-8",
-        flag: "r",
-    }).trim();
-
-    debug(`using toolchain from rust-toolchain file: ${rustToolchainFile}`);
-
-    return rustToolchainFile;
-}
-
-export function getToolchainArgs(overrideFile: string): ToolchainOptions {
-    const components: string[] = getInput("components")
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => 0 < s.length);
-
     return {
-        name: determineToolchain(overrideFile),
-        target: getInput("target"),
+        name: select("toolchain", override?.channel, id),
+        targets: select("target", override?.targets, split),
         default: getInput("default") === "true",
         override: getInput("override") === "true",
-        profile: getInput("profile"),
-        components,
+        profile: select("profile", override?.profile, id),
+        components: select("components", override?.components, split),
     };
+}
+
+function select<T>(
+    inputKey: string,
+    override: T | undefined,
+    map: (x: string) => T
+): T {
+    const input = getInput(inputKey);
+    if (input === "" && override != null) {
+        debug(
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            `${inputKey} is using the value "${override}" from rust-toolchain(.toml)? file`
+        );
+        return override;
+    }
+
+    debug(
+        `${inputKey} is using input (specified in GitHub Actions schema) value "${input}"`
+    );
+    return map(input);
 }
