@@ -54,7 +54,7 @@ jobs:
 | Name         | Required | Description                                                                                                                                         | Type   | Default |
 | ------------ | :------: | ----------------------------------------------------------------------------------------------------------------------------------------------------| ------ | --------|
 | `toolchain`  |          | [Toolchain](https://github.com/rust-lang/rustup.rs#toolchain-specification) name to use, ex. `stable`, `nightly`, `nightly-2019-04-20`, or `1.32.0` | string | stable  |
-| `target`     |          | Additionally install specified target for this toolchain, ex. `x86_64-apple-darwin`                                                                 | string |         |
+| `targets`    |          | Comma-separated list of additionally installed targets for this toolchain, ex. `x86_64-apple-darwin,aarch64-apple-darwin`                           | string |         |
 | `default`    |          | Set installed toolchain as a default toolchain                                                                                                      | bool   | false   |
 | `override`   |          | Set installed toolchain as an override for the current directory                                                                                    | bool   | false   |
 | `profile`    |          | Execute `rustup set profile {value}` before installing the toolchain, ex. `minimal`                                                                 | string | default |
@@ -141,7 +141,7 @@ it will be automatically upgraded by this Action.
 ## The toolchain file
 
 This Action supports [toolchain files](https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file),
-so it is not necessary to use `toolchain` input anymore.
+so it is not necessary to use inputs like `toolchain`, `targets` or `components` anymore.
 
 Input has higher priority, so if you are want to use toolchain file,
 you need to remove the input from the workflow file.

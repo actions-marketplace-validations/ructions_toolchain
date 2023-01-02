@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Support for the `rust-toolchain.toml` file: The behaviour respects rustup. For details, read [here](https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file). (https://github.com/ructions/toolchain/pull/176)
+  As long as your `rust-toolchain` file is recognized correctly with rustup, it'll work with this action too!
+  You may want to remove inputs in your actions file to let this action respect the `rust-toolchain` file.
+
+- Support multiple targets to be installed. (https://github.com/ructions/toolchain/pull/176)
+  You need to change the `target` input to `targets`. You don't need to change its value as long as you don't want to install multiple targets.
+
 ## [1.0.6] - 2020-03-24
 
 ### Added
